@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AD Builder — Access Controlled</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Poppins:wght@500;700&display=swap');
+
+    :root{
+      --bg-light: #f5f7fb;
+      --bg-dark: #0f1724;
+      --card-light: #ffffff;
+      --card-dark: rgba(18,22,34,0.72);
+      --accent1: #e02b3b;
+      --accent2: #2563eb;
+      --label-bg: #ffffff;
+      --label-text: #000000;
+      --input-bg: #ffffff;
+      --input-text: #000000;
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      padding:28px;
+      font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      background: linear-gradient(180deg,var(--bg-light),#e9eef9);
+      color:#0b1220;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      transition: background .28s ease, color .28s ease;
+      overflow: hidden;
+    }
+
+    body.unlocked { overflow: auto; }
+
+    body[data-theme="dark"]{
+      background: linear-gradient(180deg,var(--bg-dark), #071026);
+      color: #e6eef8;
+    }
+    body[data-theme="crimson"]{
+      background: linear-gradient(180deg,#111217 0%, #14090a 100%);
+      color:#fff6f6;
+      --accent1: #cf1020;
+      --accent2: #ff7a7a;
+    }
+
+    .container { max-width:1100px; margin:0 auto; }
+
+    .glass {
+      background: var(--card-light);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 8px 24px rgba(3,15,40,0.06);
+      transition: transform .12s ease, box-shadow .12s ease, background .28s ease;
+    }
+    body[data-theme="dark"] .glass {
+      background: var(--card-dark);
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+    body[data-theme="crimson"] .glass {
+      background: rgba(20,8,8,0.85);
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo {
+      width:56px; height:56px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(135deg,var(--accent1),var(--accent2)); color:white; font-weight:800;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+    .title { font-family:'Poppins',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.6px; }
+    .subtitle { font-size:13px; color:rgba(0,0,0,0.6); }
+    body[data-theme="dark"] .subtitle { color: rgba(230,238,248,0.8); }
+
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .tab {
+      padding:8px 14px; border-radius:999px; font-weight:600; font-size:13px; cursor:pointer;
+      background:transparent; border:1px solid rgba(0,0,0,0.06); color:inherit; transition:all .12s ease;
+    }
+    .tab:hover{ transform:translateY(-3px); }
+    .tab.active {
+      background: linear-gradient(90deg,var(--accent1),var(--accent2));
+      color:white; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      border:none;
+    }
+
+    .grid-main { display:grid; grid-template-columns: 1fr 360px; gap:20px; align-items:start; }
+    @media (max-width:980px){ .grid-main{ grid-template-columns: 1fr; } }
+
+    .label-box {
+      display:inline-block;
+      background: var(--label-bg);
+      color: var(--label-text);
+      padding:6px 10px;
+      border-radius:8px;
+      font-weight:700;
+      font-size:13px;
+      box-shadow: 0 4px 10px rgba(2,6,23,0.04);
+      margin-bottom:8px;
+    }
+    body[data-theme="dark"] .label-box{
+      background:#ffffff;
+      color:#000000;
+    }
+    body[data-theme="crimson"] .label-box{
+      background:#ffffff;
+      color:#000000;
+    }
+
+    input[type="text"], input[type="number"], select, textarea {
+      background: var(--input-bg);
+      color: var(--input-text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,0.08);
+      outline: none; width:100%;
+      transition: box-shadow .12s ease, transform .08s ease;
+      font-size:14px;
+    }
+    input::placeholder { color:#8b8b8b; }
+    input:focus, select:focus, textarea:focus{
+      box-shadow: 0 8px 20px rgba(37,99,235,0.08);
+      transform: translateY(-1px);
+    }
+
+    .feature-checkbox { accent-color: var(--accent1); width:18px; height:18px; }
+
+    .preview-box {
+      background: var(--input-bg);
+      color: var(--input-text);
+      padding:14px;
+      border-radius:10px;
+      border:1px solid rgba(0,0,0,0.08);
+      min-height:120px;
+      font-size:15px;
+      line-height:1.5;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .preview-box.pulse { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(37,99,235,0.06); }
+
+    .muted { color: #6b7280; font-size:13px; }
+    body[data-theme="dark"] .muted { color: #9fb0cc; }
+
+    .footer { display:flex; justify-content:center; margin-top:26px; }
+    .hamza { position:relative; font-family:'Poppins',sans-serif; font-weight:700; padding:10px 18px; border-radius:10px; color:var(--input-text); background:transparent; overflow:hidden; }
+    .hamza .shine {
+      position:absolute; left:-40%; top:-20%; width:40%; height:200%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.06), rgba(255,255,255,0.35), rgba(255,255,255,0.06));
+      transform: rotate(20deg); animation: sweep 2.8s linear infinite;
+      mix-blend-mode: screen; opacity:.9;
+    }
+    @keyframes sweep { 0%{left:-50%} 50%{left:120%} 100%{left:260%} }
+
+    .theme-btn { padding:8px 12px; border-radius:10px; border:1px solid rgba(0,0,0,0.06); background:var(--card-light); cursor:pointer; transition:all .18s ease; }
+    body[data-theme="dark"] .theme-btn { background:var(--card-dark); border:1px solid rgba(255,255,255,0.04); }
+
+    /* ACCESS OVERLAY */
+    .access-overlay {
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(180deg, rgba(2,6,23,0.65), rgba(2,6,23,0.85));
+      z-index:9999; transition:opacity .28s ease, visibility .28s ease;
+    }
+    .access-card {
+      width: 440px; max-width:92%; border-radius:12px; background: white; padding:20px; box-shadow:0 18px 40px rgba(2,6,23,0.6);
+      transform: translateY(0); transition: transform .28s ease, opacity .28s ease;
+    }
+    .access-card.dark { background: #0e1622; color: #e6eef8; border:1px solid rgba(255,255,255,0.04); }
+    .access-title { font-weight:800; font-size:18px; margin-bottom:6px; }
+    .access-sub { color:#6b7280; font-size:13px; margin-bottom:14px; }
+
+    .access-input {
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,0.08); font-size:14px;
+      margin-bottom:10px;
+    }
+    .access-btn {
+      width:100%; padding:10px 12px; border-radius:10px; border:none; background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; font-weight:700; cursor:pointer;
+    }
+    .access-error { color:#be123c; font-weight:700; text-align:center; margin-top:8px; display:none; }
+
+    /* shake animation for wrong key */
+    @keyframes shake {
+      10%, 90% { transform: translateX(-2px); }
+      20%, 80% { transform: translateX(4px); }
+      30%, 50%, 70% { transform: translateX(-8px); }
+      40%, 60% { transform: translateX(8px); }
+    }
+    .shake { animation: shake .5s ease; }
+
+    /* fade out */
+    .hidden-overlay { opacity:0; visibility:hidden; transition:opacity .28s ease, visibility .28s ease; pointer-events:none; }
+
+    /* small responsive */
+    @media (max-width:520px){
+      .access-card{ padding:14px; }
+    }
+
+  </style>
+</head>
+<body data-theme="light">
+
+  <!-- ACCESS OVERLAY -->
+  <div id="accessOverlay" class="access-overlay">
+    <div id="accessCard" class="access-card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <img src="https://i.ibb.co/zWRVbsRL/preview.png" alt="LI logo" style="width:46px;height:46px;border-radius:8px;object-fit:cover;box-shadow:0 8px 18px rgba(0,0,0,0.08);">
+        <div>
+          <div class="access-title">LifeInvader — Access Key</div>
+          <div class="access-sub">Enter the access key to continue</div>
+        </div>
+      </div>
+
+      <input id="accessKeyInput" class="access-input" type="password" placeholder="Enter access key" aria-label="Access key">
+      <button id="accessUnlockBtn" class="access-btn">Unlock</button>
+      <div id="accessError" class="access-error">Invalid key. Try again.</div>
+
+      <div style="margin-top:12px;font-size:12px;color:#6b7280">If you have the key, type it and press Unlock.</div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="container" id="mainApp" style="opacity:0; transform:translateY(10px); transition:opacity .28s ease, transform .28s ease;">
+    <header class="header">
+      <div class="brand">
+        <img src="https://i.ibb.co/zWRVbsRL/preview.png" alt="LI logo" style="width:56px;height:56px;border-radius:10px;object-fit:cover;box-shadow:0 8px 18px rgba(0,0,0,0.08);">
+        <div>
+          <div class="title">AD Builder</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="muted" style="font-size:13px">Theme</div>
+        <button id="themeBtn" class="theme-btn">Light</button>
+        <!-- quick lock button to clear access (for admin/testing) -->
+        <button id="lockBtn" title="Lock (clear key)" style="margin-left:6px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer">🔒</button>
+      </div>
+    </header>
+
+    <div id="tabsRow" class="tabs"></div>
+
+    <div class="grid-main">
+      <div class="glass" id="formColumn" style="padding:18px;"></div>
+
+      <aside style="display:flex;flex-direction:column;gap:14px;">
+        <div class="glass" style="padding:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:700">Preview</div>
+            <div class="muted" style="font-size:12px">Live generated ad</div>
+          </div>
+          <div id="preview" class="preview-box">Fill inputs to generate an ad preview.</div>
+          <div style="margin-top:10px" class="muted">Selecting Buying will show <strong>Budget</strong>, Selling will show <strong>Price</strong>.</div>
+        </div>
+
+        <div class="glass" style="padding:12px;display:flex;gap:8px;align-items:center">
+          <button id="copyBtn" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white;font-weight:700;">Copy Ad</button>
+          <button id="clearBtn" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:var(--card-light);font-weight:700;">Clear</button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="footer">
+      <div class="hamza">
+        Developed by Hamza
+        <div class="shine" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /***** ACCESS KEY CONFIG ******/
+    const ACCESS_KEY = 'life-invader-hamza'; // <-- set access key here
+    const STORAGE_KEY = 'adbuilder_access_key_valid';
+
+    // DOM refs
+    const overlay = document.getElementById('accessOverlay');
+    const accessCard = document.getElementById('accessCard');
+    const inputKey = document.getElementById('accessKeyInput');
+    const unlockBtn = document.getElementById('accessUnlockBtn');
+    const accessError = document.getElementById('accessError');
+    const mainApp = document.getElementById('mainApp');
+    const lockBtn = document.getElementById('lockBtn');
+
+    // check storage on load
+    function checkAccessOnLoad(){
+      try{
+        const val = localStorage.getItem(STORAGE_KEY);
+        if(val === ACCESS_KEY){
+          unlockSuccess(false);
+        } else {
+          showOverlay();
+        }
+      }catch(e){
+        showOverlay();
+      }
+    }
+
+    function showOverlay(){
+      overlay.classList.remove('hidden-overlay');
+      overlay.style.display = 'flex';
+      document.body.classList.remove('unlocked');
+      // hide main app until unlocked
+      mainApp.style.opacity = '0';
+      mainApp.style.transform = 'translateY(10px)';
+    }
+
+    function hideOverlay(){
+      overlay.classList.add('hidden-overlay');
+      setTimeout(()=> overlay.style.display = 'none', 300);
+    }
+
+    function unlockSuccess(remember = true){
+      // store key
+      if(remember){
+        try{ localStorage.setItem(STORAGE_KEY, ACCESS_KEY); }catch(e){}
+      }
+      accessError.style.display = 'none';
+      inputKey.value = '';
+      // reveal main app
+      hideOverlay();
+      document.body.classList.add('unlocked');
+      mainApp.style.opacity = '1';
+      mainApp.style.transform = 'translateY(0)';
+      // render app UI
+      initApp();
+    }
+
+    function unlockFail(){
+      accessError.style.display = 'block';
+      accessCard.classList.remove('shake');
+      // force reflow then add class
+      void accessCard.offsetWidth;
+      accessCard.classList.add('shake');
+      setTimeout(()=> accessCard.classList.remove('shake'), 600);
+    }
+
+    // unlock button click
+    unlockBtn.addEventListener('click', ()=>{
+      const v = inputKey.value.trim();
+      if(!v) { unlockFail(); return; }
+      if(v === ACCESS_KEY) unlockSuccess(true);
+      else unlockFail();
+    });
+
+    // allow Enter key to unlock
+    inputKey.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        unlockBtn.click();
+      }
+    });
+
+    // Allow quick re-lock via lock button (clears localStorage and shows overlay)
+    lockBtn.addEventListener('click', ()=>{
+      try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+      showOverlay();
+      inputKey.focus();
+    });
+
+    // Optional: keyboard shortcut Ctrl+L to lock (developer convenience)
+    window.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.key.toLowerCase() === 'l'){
+        try{ localStorage.removeItem(STORAGE_KEY); }catch(err){}
+        showOverlay();
+        inputKey.focus();
+      }
+    });
+
+    /********** MAIN APP CODE (keeps the previously built ad builder functionality) **********/
+    // Data lists
+    const LOCATIONS = [
+      "Choose the city","Vinewood Hills","Mirror Park","Richman","Sandy Shores","Paleto Bay",
+      "Lifeinvader","the beach market","Stock Exchange","train station","Downtown Vinewood",
+      "Rockford Hills","Del Perro","Alta","La Puerta","Little Seoul","Downtown Los Santos",
+      "Grapeseed","Blaine County","Los Santos International Airport"
+    ];
+
+    const VEHICLE_MODELS = [
+      "Annis GT-R I","Annis GT-R II","Banshee 900R","Buffalo S","Comet S2","Dominator GTX",
+      "Elegy Retro Custom","Futo GTX","Itali GTO","Jester RR","Karin Sultan RS","Kuruma",
+      "Lynx","Neon","Pariah","Raiden","Savestra","Schlagen GT","Specter Custom","Tempesta",
+      "Vigero ZX","ZR350","Zentorno","Pegassi Infernus","Obey 9F","Grotti Itali RSX","Pfister 811",
+      "Lampadati Felon","Enus Stafford"
+    ];
+
+    const VEHICLE_FEATURES = ["Configuration","Visual Upgrades","Luminous Wheels","Insurance","Turbo Kit","Drift Kit"];
+
+    const BUSINESS_TYPES = [
+      "24/7 Store","Clothing Store","Ammu-Nation","Barbershop","Gas Station","Tattoo Shop",
+      "Car Wash","Auto Repair","Restaurant","Night Club","Gym","Liquor Store","Pharmacy","Convenience Store"
+    ];
+
+    const TABS = ["Real Estate","Vehicles","Businesses","Work","Services","Other"];
+
+    const state = { activeTab: TABS[0], lastSentence: '' };
+
+    // Refs and helpers
+    const tabsRow = document.getElementById('tabsRow');
+    const formColumn = document.getElementById('formColumn');
+    const preview = document.getElementById('preview');
+    const copyBtn = document.getElementById('copyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const themeBtn = document.getElementById('themeBtn');
+
+    function el(tag, cls='', html=''){ const e=document.createElement(tag); e.className=cls; e.innerHTML=html; return e; }
+
+    function renderTabs(){
+      tabsRow.innerHTML='';
+      TABS.forEach(t=>{
+        const b = el('button','tab', t);
+        if(state.activeTab === t) b.classList.add('active');
+        b.onclick = ()=>{ state.activeTab=t; renderTabs(); renderForm(); updatePreview(); };
+        tabsRow.appendChild(b);
+      });
+    }
+
+    function renderForm(){
+      formColumn.innerHTML='';
+      formColumn.appendChild(el('div','',`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:800;font-size:16px">${state.activeTab}</div><div class="muted" style="font-size:12px">All fields empty by default</div></div>`));
+      if(state.activeTab === 'Real Estate') renderRealEstate();
+      else if(state.activeTab === 'Vehicles') renderVehicles();
+      else if(state.activeTab === 'Businesses') renderBusinesses();
+      else if(state.activeTab === 'Work') renderWork();
+      else if(state.activeTab === 'Services') renderWork();
+      else renderOther();
+      formColumn.querySelectorAll('input, select, textarea').forEach(i=>{
+        i.addEventListener('input', updatePreview);
+        i.addEventListener('change', updatePreview);
+      });
+    }
+
+    function renderRealEstate(){
+      const wrap = el('div','space-y-4');
+      const row1 = el('div','grid grid-cols-1 md:grid-cols-2 gap-3');
+      row1.appendChild(el('div','',`<div class="label-box">Action</div><select id="reAction" class="mt-2"><option value="Selling">Selling</option><option value="Buying">Buying</option><option value="Exchange">Exchange</option></select>`));
+      row1.appendChild(el('div','',`<div class="label-box">Type</div><select id="reType" class="mt-2"><option value="">Select type</option><option>House</option><option>Apartment</option><option>Casino Penthouse</option><option>Mansion</option></select>`));
+      wrap.appendChild(row1);
+
+      const row2 = el('div','grid grid-cols-1 md:grid-cols-3 gap-3');
+      row2.appendChild(el('div','',`<div class="label-box">Number (optional)</div><input id="reNumber" placeholder="e.g. 468" />`));
+      row2.appendChild(el('div','',`<div class="label-box">Garage spaces</div><select id="reGarage" class="mt-2"><option value="">Select g.s.</option><option>2 g.s.</option><option>5 g.s.</option><option>9 g.s.</option><option>25 g.s.</option><option>0 g.s.</option></select>`));
+      row2.appendChild(el('div','',`<div class="label-box">Warehouse (w.h.)</div><select id="reWarehouse" class="mt-2"><option value="">Select w.h.</option><option>3 w.h.</option><option>5 w.h.</option><option>None</option></select>`));
+      wrap.appendChild(row2);
+
+      const row3 = el('div','grid grid-cols-1 md:grid-cols-2 gap-3');
+      row3.appendChild(el('div','',`<div class="label-box">Location</div><select id="reLocation" class="mt-2">${LOCATIONS.map(l=>`<option value="${l}">${l}</option>`).join('')}</select>`));
+      row3.appendChild(el('div','',`<div class="label-box">Price / Budget</div><input id="rePrice" placeholder="Leave empty → Negotiable" />`));
+      wrap.appendChild(row3);
+
+      wrap.appendChild(el('div','',`<div class="label-box">Extras (select any)</div>`));
+      const extrasGrid = el('div','grid grid-cols-2 md:grid-cols-4 gap-2 mb-2');
+      const extrasList = [['garden','Garden'],['custom_interior','Custom interior'],['helipad','Helipad'],['pool','Swimming pool'],['tennis','Tennis court'],['long_driveway','Long driveway'],['nice_views','Nice views'],['insurance','Insurance']];
+      extrasList.forEach(([k,label])=>{ extrasGrid.appendChild(el('label','inline-flex items-center gap-2', `<input type="checkbox" id="re_extra_${k}" class="feature-checkbox"> <span>${label}</span>`)); });
+      wrap.appendChild(extrasGrid);
+
+      formColumn.appendChild(wrap);
+    }
+
+    function renderVehicles(){
+      const wrap = el('div','space-y-4');
+      const row1 = el('div','grid grid-cols-1 md:grid-cols-2 gap-3');
+      row1.appendChild(el('div','',`<div class="label-box">Action</div><select id="vAction" class="mt-2"><option value="Selling">Selling</option><option value="Buying">Buying</option></select>`));
+      row1.appendChild(el('div','',`<div class="label-box">Vehicle Type</div><select id="vType" class="mt-2"><option value="">Select type</option><option>Car</option><option>Motorbike</option><option>Boat</option></select>`));
+      wrap.appendChild(row1);
+
+      wrap.appendChild(el('div','',`<div class="label-box">Vehicle Model</div><select id="vModel" class="mt-2"><option value="">Select model</option>${VEHICLE_MODELS.map(m=>`<option value="${m}">${m}</option>`).join('')}</select>`));
+
+      wrap.appendChild(el('div','',`<div class="label-box">Features (select any)</div>`));
+      const featGrid = el('div','grid grid-cols-2 md:grid-cols-3 gap-2');
+      VEHICLE_FEATURES.forEach(f=>{ const key=f.replace(/\s+/g,''); featGrid.appendChild(el('label','inline-flex items-center gap-2', `<input type="checkbox" id="v_feat_${key}" class="feature-checkbox"> <span>${f}</span>`)); });
+      wrap.appendChild(featGrid);
+
+      wrap.appendChild(el('div','',`<div class="label-box">Price / Budget</div><input id="vPrice" placeholder="Leave empty → Negotiable" />`));
+      formColumn.appendChild(wrap);
+    }
+
+    function renderBusinesses(){
+      const wrap = el('div','space-y-4');
+      const row1 = el('div','grid grid-cols-1 md:grid-cols-2 gap-3');
+      row1.appendChild(el('div','',`<div class="label-box">Action</div><select id="bAction" class="mt-2"><option value="Selling">Selling</option><option value="Buying">Buying</option></select>`));
+      row1.appendChild(el('div','',`<div class="label-box">Business Type (or type custom)</div>
+        <div style="display:flex;gap:8px">
+          <select id="bType" style="flex:1"><option value="">Select type</option>${BUSINESS_TYPES.map(b=>`<option value="${b}">${b}</option>`).join('')}</select>
+          <input id="bTypeCustom" placeholder="Or type custom" style="flex:1" />
+        </div>`));
+      wrap.appendChild(row1);
+
+      const row2 = el('div','grid grid-cols-1 md:grid-cols-3 gap-3');
+      row2.appendChild(el('div','',`<div class="label-box">Business Number (№)</div><input id="bNumber" placeholder="e.g. 45">`));
+      row2.appendChild(el('div','',`<div class="label-box">Location</div><select id="bLocation" class="mt-2">${LOCATIONS.map(l=>`<option value="${l}">${l}</option>`).join('')}</select>`));
+      row2.appendChild(el('div','',`<div class="label-box">Beds (optional)</div><input id="bBeds" type="number" min="0" placeholder="0">`));
+      wrap.appendChild(row2);
+
+      wrap.appendChild(el('div','',`<div class="label-box">Price / Budget</div><input id="bPrice" placeholder="Leave empty → Negotiable">`));
+      formColumn.appendChild(wrap);
+    }
+
+    function renderWork(){
+      const wrap = el('div','space-y-4');
+      wrap.appendChild(el('div','',`<div class="label-box">Action</div><select id="oAction" class="mt-2"><option>Hiring</option><option>Offering</option><option>Looking</option></select>`));
+      wrap.appendChild(el('div','',`<div class="label-box">Position / Service</div><input id="oItem" placeholder="e.g. Mechanic">`));
+      wrap.appendChild(el('div','',`<div class="label-box">Location</div><select id="oLocation" class="mt-2">${LOCATIONS.map(l=>`<option value="${l}">${l}</option>`).join('')}</select>`));
+      wrap.appendChild(el('div','',`<div class="label-box">Details</div><input id="oDetails" placeholder="Short details (optional)">`));
+      wrap.appendChild(el('div','',`<div class="label-box">Price / Budget</div><input id="oPrice" placeholder="Leave empty → Negotiable">`));
+      formColumn.appendChild(wrap);
+    }
+
+    function renderOther(){
+      const wrap = el('div','space-y-4');
+      wrap.appendChild(el('div','',`<div class="label-box">Action</div><select id="otherAction" class="mt-2"><option>Looking</option></select>`));
+      wrap.appendChild(el('div','',`<div class="label-box">Details</div><input id="otherItem" placeholder="What are you looking for?">`));
+      formColumn.appendChild(wrap);
+    }
+
+    function updatePreview(){
+      const tab = state.activeTab;
+      let text = '';
+
+      if(tab === 'Real Estate'){
+        const action = document.getElementById('reAction')?.value || 'Selling';
+        const type = document.getElementById('reType')?.value || '';
+        const number = document.getElementById('reNumber')?.value || '';
+        const garage = document.getElementById('reGarage')?.value || '';
+        const wh = document.getElementById('reWarehouse')?.value || '';
+        const loc = document.getElementById('reLocation')?.value || '';
+        const priceVal = document.getElementById('rePrice')?.value || '';
+
+        const extrasK = ['garden','custom_interior','helipad','pool','tennis','long_driveway','nice_views','insurance'];
+        const labels = {garden:'garden', custom_interior:'custom interior', helipad:'helipad', pool:'swimming pool', tennis:'tennis court', long_driveway:'long driveway', nice_views:'nice views', insurance:'insurance'};
+        const sel = [];
+        extrasK.forEach(k=>{ const e=document.getElementById('re_extra_'+k); if(e && e.checked) sel.push(labels[k]); });
+
+        const numPart = number ? ` №${number}` : '';
+        const midParts = [];
+        if(sel.length) midParts.push(sel.join(', '));
+        if(garage) midParts.push(garage);
+        if(wh) midParts.push(wh);
+        const middle = midParts.length ? ` with ${midParts.join(', ')}` : '';
+        const priceLabel = (action === 'Buying') ? 'Budget' : 'Price';
+        const priceText = priceVal ? `${priceLabel}: ${priceVal}.` : `${priceLabel}: Negotiable.`;
+        text = `${action} ${type}${numPart}${middle}${loc ? ' in ' + loc : ''}. ${priceText}`.replace(/\s+/g,' ').trim();
+      }
+      else if(tab === 'Vehicles'){
+        const action = document.getElementById('vAction')?.value || 'Selling';
+        const model = document.getElementById('vModel')?.value || '';
+        const priceVal = document.getElementById('vPrice')?.value || '';
+        const fmap = { Configuration:'Configuration', VisualUpgrades:'Visual Upgrades', LuminousWheels:'Luminous Wheels', Insurance:'Insurance', TurboKit:'Turbo Kit', DriftKit:'Drift Kit' };
+        const chosen = [];
+        Object.keys(fmap).forEach(k=>{ const e=document.getElementById('v_feat_'+k); if(e && e.checked) chosen.push(fmap[k]); });
+        const featureText = chosen.length ? ` with ${chosen.join(', ')}` : '';
+        const priceLabel = (action === 'Buying') ? 'Budget' : 'Price';
+        const priceText = priceVal ? `${priceLabel}: ${priceVal}.` : `${priceLabel}: Negotiable.`;
+        text = model ? `${action} "${model}"${featureText}. ${priceText}` : `${action}${featureText ? ' ' + featureText : ''}. ${priceText}`.trim();
+      }
+      else if(tab === 'Businesses'){
+        const action = document.getElementById('bAction')?.value || 'Selling';
+        const typeDropdown = document.getElementById('bType')?.value || '';
+        const typeCustom = document.getElementById('bTypeCustom')?.value || '';
+        const name = typeCustom || typeDropdown || '';
+        const number = document.getElementById('bNumber')?.value || '';
+        const loc = document.getElementById('bLocation')?.value || '';
+        const beds = document.getElementById('bBeds')?.value || '';
+        const priceVal = document.getElementById('bPrice')?.value || '';
+        const numPart = number ? ` №${number}` : '';
+        const locText = (loc === 'Choose the city' || !loc) ? 'in the city' : `in ${loc}`;
+        const priceLabel = (action === 'Buying') ? 'Budget' : 'Price';
+        const priceText = priceVal ? `${priceLabel}: ${priceVal}.` : `${priceLabel}: Negotiable.`;
+
+        if(name){
+          if(beds){ text = `${action} ${name}${numPart} ${locText}. ${beds} beds. ${priceText}`; }
+          else { text = `${action} ${name}${numPart} ${locText}. ${priceText}`; }
+        } else { text = `${action} Business${numPart} ${locText}. ${priceText}`; }
+        text = text.replace(/\s+/g,' ').trim();
+      }
+      else if(tab === 'Work' || tab === 'Services'){
+        const action = document.getElementById('oAction')?.value || 'Hiring';
+        const item = document.getElementById('oItem')?.value || '';
+        const loc = document.getElementById('oLocation')?.value || '';
+        const details = document.getElementById('oDetails')?.value || '';
+        const priceVal = document.getElementById('oPrice')?.value || '';
+        const priceLabel = (action === 'Buying') ? 'Budget' : 'Price';
+        const priceText = priceVal ? `${priceLabel}: ${priceVal}.` : `${priceLabel}: Negotiable.`;
+        text = `${action} ${item}${loc ? ' in ' + loc : ''}${details ? ' — ' + details : ''}. ${priceText}`.trim();
+      }
+      else {
+        const item = document.getElementById('otherItem')?.value || '';
+        text = `Looking ${item}.`.trim();
+      }
+
+      preview.textContent = text || 'Fill inputs to generate an ad preview.';
+      preview.classList.add('pulse');
+      setTimeout(()=> preview.classList.remove('pulse'), 360);
+      state.lastSentence = preview.textContent;
+    }
+
+    copyBtn.onclick = ()=>{
+      const txt = state.lastSentence || preview.textContent;
+      if(!txt || txt === 'Fill inputs to generate an ad preview.') { alert('Nothing to copy yet.'); return; }
+      navigator.clipboard.writeText(txt).then(()=>{
+        const old = copyBtn.innerText;
+        copyBtn.innerText = 'Copied!';
+        setTimeout(()=> copyBtn.innerText = old, 1000);
+      }).catch(()=> alert('Copy failed — select text and press Ctrl/Cmd+C'));
+    };
+
+    clearBtn.onclick = ()=>{
+      formColumn.querySelectorAll('input').forEach(i=>{ if(i.type === 'checkbox') i.checked=false; else i.value=''; });
+      formColumn.querySelectorAll('select').forEach(s=>s.selectedIndex = 0);
+      updatePreview();
+    };
+
+    // theme toggle cycling: light -> dark -> crimson
+    const themes = ['light','dark','crimson'];
+    let themeIndex = 0;
+    themeBtn.onclick = ()=>{
+      themeIndex = (themeIndex + 1) % themes.length;
+      document.body.setAttribute('data-theme', themes[themeIndex]);
+      themeBtn.innerText = themes[themeIndex].charAt(0).toUpperCase() + themes[themeIndex].slice(1);
+    };
+
+    // initialize app after unlock
+    function initApp(){
+      renderTabs();
+      renderForm();
+      updatePreview();
+      // show mainApp (already unhidden by unlockSuccess)
+    }
+
+    // start: check access
+    checkAccessOnLoad();
+
+  </script>
+</body>
+</html>
